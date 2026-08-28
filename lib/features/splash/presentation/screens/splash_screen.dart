@@ -42,22 +42,36 @@ class _SplashScreenState extends State<SplashScreen>
     super.dispose();
   }
 
+  bool _hasNavigated = false;
+
+  void _navigateToOnboarding() {
+    if (_hasNavigated || !mounted) return;
+    _hasNavigated = true;
+    Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<SplashBloc, SplashState>(
       listener: (context, state) {
         if (state is SplashCompleted) {
           if (state.isFirstTime) {
-            Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
+            _navigateToOnboarding();
           } else {
-            Navigator.pushReplacementNamed(context, AppRoutes.login);
+            if (!_hasNavigated && mounted) {
+              _hasNavigated = true;
+              Navigator.pushReplacementNamed(context, AppRoutes.login);
+            }
           }
         }
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF000000),
-        body: SizedBox.expand(
-          child: Stack(
+        body: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: _navigateToOnboarding,
+          child: SizedBox.expand(
+            child: Stack(
             children: [
               // Bottom Image: Group 22.png (lebar penuh kanan-kiri)
               Positioned(
@@ -147,6 +161,7 @@ class _SplashScreenState extends State<SplashScreen>
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 }

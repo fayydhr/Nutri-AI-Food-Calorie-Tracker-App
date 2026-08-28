@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/routes/app_routes.dart';
-import '../../../../core/widgets/custom_button.dart';
 import '../bloc/onboarding_bloc.dart';
 import '../bloc/onboarding_event.dart';
 import '../bloc/onboarding_state.dart';
-import '../widgets/onboarding_indicator.dart';
 import 'onboarding_step1_screen.dart';
 import 'onboarding_step2_screen.dart';
 import 'onboarding_step3_screen.dart';
@@ -27,6 +24,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     OnboardingStep2Screen(),
     OnboardingStep3Screen(),
   ];
+
+  Color _getBackgroundColor(int page) {
+    switch (page) {
+      case 0:
+        return const Color(0xFFDDC0FF); // Lavender (Step 1)
+      case 1:
+        return const Color(0xFF45C588); // Mint Green (Step 2)
+      case 2:
+        return const Color(0xFFFF6F43); // Orange (Step 3)
+      default:
+        return const Color(0xFFDDC0FF);
+    }
+  }
 
   @override
   void dispose() {
@@ -49,78 +59,48 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           );
         }
       },
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          actions: [
-            BlocBuilder<OnboardingBloc, OnboardingState>(
-              builder: (context, state) {
-                if (state.isLastPage) return const SizedBox.shrink();
-                return TextButton(
-                  onPressed: () {
-                    context.read<OnboardingBloc>().add(OnboardingSkipPressed());
-                  },
-                  child: const Text(
-                    AppStrings.skip,
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
+      child: BlocBuilder<OnboardingBloc, OnboardingState>(
+        builder: (context, state) {
+          final currentColor = _getBackgroundColor(state.currentPage);
+
+          return Scaffold(
+            backgroundColor: currentColor,
+            extendBodyBehindAppBar: true,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              actions: [
+                if (!state.isLastPage)
+                  TextButton(
+                    onPressed: () {
+                      context
+                          .read<OnboardingBloc>()
+                          .add(OnboardingSkipPressed());
+                    },
+                    child: const Text(
+                      AppStrings.skip,
+                      style: TextStyle(
+                        color: Color(0xFF121212),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
-                );
-              },
+                const SizedBox(width: 8),
+              ],
             ),
-            const SizedBox(width: 8),
-          ],
-        ),
-        body: SafeArea(
-          child: Column(
-            children: [
-              Expanded(
-                child: PageView.builder(
-                  controller: _pageController,
-                  itemCount: _pages.length,
-                  onPageChanged: (index) {
-                    context
-                        .read<OnboardingBloc>()
-                        .add(OnboardingPageChanged(index));
-                  },
-                  itemBuilder: (context, index) => _pages[index],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-                child: BlocBuilder<OnboardingBloc, OnboardingState>(
-                  builder: (context, state) {
-                    return Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        OnboardingIndicator(
-                          count: state.totalPages,
-                          currentIndex: state.currentPage,
-                        ),
-                        const SizedBox(height: 32),
-                        CustomButton(
-                          text: state.isLastPage
-                              ? AppStrings.getStarted
-                              : AppStrings.next,
-                          onPressed: () {
-                            context
-                                .read<OnboardingBloc>()
-                                .add(OnboardingNextPressed());
-                          },
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
+            body: PageView.builder(
+              controller: _pageController,
+              itemCount: _pages.length,
+              onPageChanged: (index) {
+                context
+                    .read<OnboardingBloc>()
+                    .add(OnboardingPageChanged(index));
+              },
+              itemBuilder: (context, index) => _pages[index],
+            ),
+          );
+        },
       ),
     );
   }
