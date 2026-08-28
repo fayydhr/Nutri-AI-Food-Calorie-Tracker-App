@@ -12,8 +12,8 @@ class SplashBloc extends Bloc<SplashEvent, SplashState> {
     Emitter<SplashState> emit,
   ) async {
     emit(SplashLoading());
-    // Simulate initial loading / session check
-    await Future.delayed(const Duration(seconds: 2));
+    // Splash screen duration: 1 minute as requested
+    await Future.delayed(const Duration(minutes: 1));
     emit(const SplashCompleted(isFirstTime: true));
   }
 }
