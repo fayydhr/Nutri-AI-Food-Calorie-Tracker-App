@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/constants/app_strings.dart';
@@ -5,15 +6,20 @@ import 'core/routes/app_routes.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/data/datasources/auth_remote_datasource.dart';
 import 'features/auth/data/repositories/auth_repository_impl.dart';
+import 'features/auth/domain/usecases/google_login_usecase.dart';
 import 'features/auth/domain/usecases/login_usecase.dart';
 import 'features/auth/domain/usecases/signup_usecase.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/home/presentation/bloc/home_bloc.dart';
 import 'features/onboarding/presentation/bloc/onboarding_bloc.dart';
 import 'features/splash/presentation/bloc/splash_bloc.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const NutriAiApp());
 }
 
@@ -28,6 +34,7 @@ class NutriAiApp extends StatelessWidget {
         AuthRepositoryImpl(remoteDataSource: authRemoteDataSource);
     final loginUseCase = LoginUseCase(authRepository);
     final signupUseCase = SignupUseCase(authRepository);
+    final googleLoginUseCase = GoogleLoginUseCase(authRepository);
 
     return MultiBlocProvider(
       providers: [
@@ -41,6 +48,7 @@ class NutriAiApp extends StatelessWidget {
           create: (context) => AuthBloc(
             loginUseCase: loginUseCase,
             signupUseCase: signupUseCase,
+            googleLoginUseCase: googleLoginUseCase,
           ),
         ),
         BlocProvider<HomeBloc>(

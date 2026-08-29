@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "508655506056",
+    "project_id": "nutriai-644c3",
+    "storage_bucket": "nutriai-644c3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:508655506056:android:55c1b99324c7507ad5053d",
+        "android_client_info": {
+          "package_name": "com.example.nutriai"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "508655506056-ulpb9qud2ott7oi3b5ci47475krk5kfh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.nutriai",
+            "certificate_hash": "ca7f465b9546248c28dd15b7eb97a32f20fe91fa"
+          }
+        },
+        {
+          "client_id": "508655506056-g4aro5jjlv8n4nvhec5o6o7r4mlhhhb1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD1MtpHlq1fn3e7eaTSi7yFAdWkJQ9WVpE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "508655506056-g4aro5jjlv8n4nvhec5o6o7r4mlhhhb1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "508655506056-57lrmo98jciolpr9non5cbpc5bqbj3v5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.nutriai"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

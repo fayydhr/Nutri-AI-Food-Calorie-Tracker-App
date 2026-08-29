@@ -27,4 +27,9 @@ class AuthRepositoryImpl implements AuthRepository {
       password: password,
     );
   }
+
+  @override
+  Future<UserEntity> loginWithGoogle() async {
+    return await remoteDataSource.loginWithGoogle();
+  }
 }
