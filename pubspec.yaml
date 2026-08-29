@@ -65,16 +65,9 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
   assets:
     - assets/svg/
-    - assets/svg/logo.svg
     - assets/png/
-    - assets/png/OB1.png
-    - assets/png/OB2.png
-    - assets/png/OB3.png
-    - assets/png/Group 22.png
-    - assets/png/Ellipse 13.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
