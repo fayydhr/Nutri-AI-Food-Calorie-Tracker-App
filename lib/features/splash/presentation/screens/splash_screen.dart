@@ -71,97 +71,111 @@ class _SplashScreenState extends State<SplashScreen>
           behavior: HitTestBehavior.opaque,
           onTap: _navigateToOnboarding,
           child: SizedBox.expand(
-            child: Stack(
-            children: [
-              // Bottom Image: Group 22.png (lebar penuh kanan-kiri)
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: Image.asset(
-                    AppAssets.splashBottom,
-                    width: double.infinity,
-                    fit: BoxFit.fitWidth,
-                  ),
-                ),
-              ),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 500),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final screenHeight = constraints.maxHeight;
+                    final topPadding =
+                        (screenHeight * 0.18).clamp(32.0, 156.0);
+                    final gap = (screenHeight * 0.045).clamp(16.0, 40.0);
 
-              // Content: Logo & Tagline (padding atas 156, center)
-              Positioned(
-                top: 156,
-                left: 0,
-                right: 0,
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Logo SVG
-                      SvgPicture.asset(
-                        AppAssets.logoSvg,
-                        width: 162,
-                        height: 54,
-                      ),
-                      const SizedBox(height: 40),
-
-                      // Baris 1: Eating [Healthy]
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Eating ',
-                            style: GoogleFonts.spaceGrotesk(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w600,
-                              height: 36 / 24,
-                              color: const Color(0xFFFFFFFF),
+                    return Stack(
+                      children: [
+                        // Bottom Image: Group 22.png (lebar penuh)
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          child: FadeTransition(
+                            opacity: _fadeAnimation,
+                            child: Image.asset(
+                              AppAssets.splashBottom,
+                              width: double.infinity,
+                              fit: BoxFit.fitWidth,
                             ),
                           ),
-                          Container(
-                            width: 114,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFF6F43),
-                              borderRadius: BorderRadius.circular(50),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              'Healthy',
-                              style: GoogleFonts.spaceGrotesk(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w600,
-                                height: 1.0,
-                                color: const Color(0xFFFFFFFF),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      // Baris 2: made easy!
-                      Text(
-                        'made easy!',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.spaceGrotesk(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w600,
-                          height: 36 / 24,
-                          color: const Color(0xFFFFFFFF),
                         ),
-                      ),
-                    ],
-                  ),
+
+                        // Content: Logo & Tagline (responsif)
+                        Positioned(
+                          top: topPadding,
+                          left: 0,
+                          right: 0,
+                          child: FadeTransition(
+                            opacity: _fadeAnimation,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                // Logo SVG
+                                SvgPicture.asset(
+                                  AppAssets.logoSvg,
+                                  width: 162,
+                                  height: 54,
+                                ),
+                                SizedBox(height: gap),
+
+                                // Baris 1: Eating [Healthy]
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'Eating ',
+                                      style: GoogleFonts.spaceGrotesk(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.w600,
+                                        height: 36 / 24,
+                                        color: const Color(0xFFFFFFFF),
+                                      ),
+                                    ),
+                                    Container(
+                                      width: 114,
+                                      height: 36,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFF6F43),
+                                        borderRadius: BorderRadius.circular(50),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        'Healthy',
+                                        style: GoogleFonts.spaceGrotesk(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.w600,
+                                          height: 1.0,
+                                          color: const Color(0xFFFFFFFF),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                                // Baris 2: made easy!
+                                Text(
+                                  'made easy!',
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w600,
+                                    height: 36 / 24,
+                                    color: const Color(0xFFFFFFFF),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),
-    ),
-  );
+    );
   }
 }

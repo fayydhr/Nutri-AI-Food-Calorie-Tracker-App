@@ -14,133 +14,158 @@ class OnboardingStep1Screen extends StatelessWidget {
       width: double.infinity,
       height: double.infinity,
       color: const Color(0xFFDDC0FF),
-      child: Stack(
-        children: [
-          // Content dengan scroll agar responsif di berbagai ukuran layar
-          SingleChildScrollView(
-            physics: const ClampingScrollPhysics(),
-            child: SizedBox(
-              width: double.infinity,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final screenHeight = constraints.maxHeight;
+              final topPadding =
+                  (screenHeight * 0.11).clamp(24.0, 105.0);
+              final imageHeight =
+                  (screenHeight * 0.35).clamp(180.0, 364.0);
+              final gapUnderImage =
+                  (screenHeight * 0.07).clamp(16.0, 97.0);
+              final buttonScale =
+                  (screenHeight / 844.0).clamp(0.85, 1.0);
+
+              return Stack(
                 children: [
-                  // Padding atas 105
-                  const SizedBox(height: 105),
+                  // Content responsif dengan scroll cadangan
+                  SingleChildScrollView(
+                    physics: const ClampingScrollPhysics(),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(height: topPadding),
 
-                  // assets\png\OB1.png
-                  Image.asset(
-                    AppAssets.ob1,
-                    width: 305,
-                    height: 364,
-                    fit: BoxFit.contain,
-                  ),
+                          // assets\png\OB1.png (tinggi responsif)
+                          ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxHeight: imageHeight,
+                              maxWidth: 305,
+                            ),
+                            child: Image.asset(
+                              AppAssets.ob1,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
 
-                  // size box 97
-                  const SizedBox(height: 97),
+                          SizedBox(height: gapUnderImage),
 
-                  // Your Smart Nutrition Companion (Space Grotesk, semibold, 28)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Text(
-                      'Your Smart Nutrition\nCompanion',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF121212),
-                        height: 1.25,
-                      ),
-                    ),
-                  ),
-
-                  // sizebox 12
-                  const SizedBox(height: 12),
-
-                  // Subtitle (Space Grotesk, regular, 17)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
-                    child: Text(
-                      'Track your meals, monitor nutrients, and reach your health goals with AI-powered support.',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 17,
-                        fontWeight: FontWeight.normal,
-                        color: const Color(0xFF121212).withValues(alpha: 0.8),
-                        height: 1.4,
-                      ),
-                    ),
-                  ),
-
-                  // Ruang untuk tombol bawah agar tidak tumpang tindih saat di-scroll
-                  const SizedBox(height: 210),
-                ],
-              ),
-            ),
-          ),
-
-          // Di paling bawah tengah: assets\png\Ellipse 13.png
-          // Dalem nya ada lingkaran 121212 dan isinya Next Space Grotesk semibold 18
-          // dan bawahnya ada arrow ke kanan
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: GestureDetector(
-                onTap: () {
-                  context.read<OnboardingBloc>().add(OnboardingNextPressed());
-                },
-                child: SizedBox(
-                  width: 212,
-                  height: 188,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // assets\png\Ellipse 13.png
-                      Image.asset(
-                        AppAssets.ellipse13,
-                        width: 212,
-                        height: 188,
-                        fit: BoxFit.contain,
-                      ),
-
-                      // Lingkaran 121212
-                      Container(
-                        width: 94,
-                        height: 94,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF121212),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Next',
+                          // Title: Your Smart Nutrition Companion (Space Grotesk, semibold, 28)
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 24),
+                            child: Text(
+                              'Your Smart Nutrition\nCompanion',
+                              textAlign: TextAlign.center,
                               style: GoogleFonts.spaceGrotesk(
-                                fontSize: 18,
+                                fontSize: (screenHeight < 700) ? 24 : 28,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                                height: 1.1,
+                                color: const Color(0xFF121212),
+                                height: 1.25,
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            const Icon(
-                              Icons.arrow_forward_rounded,
-                              color: Colors.white,
-                              size: 20,
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          // Subtitle (Space Grotesk, regular, 17)
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 32),
+                            child: Text(
+                              'Track your meals, monitor nutrients, and reach your health goals with AI-powered support.',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.spaceGrotesk(
+                                fontSize: (screenHeight < 700) ? 15 : 17,
+                                fontWeight: FontWeight.normal,
+                                color: const Color(0xFF121212)
+                                    .withValues(alpha: 0.8),
+                                height: 1.4,
+                              ),
                             ),
-                          ],
+                          ),
+
+                          // Ruang untuk tombol bawah
+                          SizedBox(height: 188 * buttonScale + 20),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Di paling bawah tengah: assets\png\Ellipse 13.png
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Transform.scale(
+                        scale: buttonScale,
+                        alignment: Alignment.bottomCenter,
+                        child: GestureDetector(
+                          onTap: () {
+                            context
+                                .read<OnboardingBloc>()
+                                .add(OnboardingNextPressed());
+                          },
+                          child: SizedBox(
+                            width: 212,
+                            height: 188,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Image.asset(
+                                  AppAssets.ellipse13,
+                                  width: 212,
+                                  height: 188,
+                                  fit: BoxFit.contain,
+                                ),
+                                Container(
+                                  width: 94,
+                                  height: 94,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF121212),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'Next',
+                                        style: GoogleFonts.spaceGrotesk(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                          height: 1.1,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      const Icon(
+                                        Icons.arrow_forward_rounded,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-            ),
+                ],
+              );
+            },
           ),
-        ],
+        ),
       ),
     );
   }

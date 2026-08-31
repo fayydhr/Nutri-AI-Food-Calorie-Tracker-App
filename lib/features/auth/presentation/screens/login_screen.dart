@@ -73,337 +73,363 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Scaffold(
         backgroundColor: const Color(0xFF000000),
         body: SafeArea(
-          child: SingleChildScrollView(
-            // padding kiri 20 atas 135
-            padding: const EdgeInsets.only(
-              left: 20,
-              right: 20,
-              top: 135,
-              bottom: 32,
-            ),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Title: Welcome back to NutriAI (Space Grotesk, semibold 28)
-                  Text(
-                    'Welcome back to NutriAI',
-                    style: GoogleFonts.spaceGrotesk(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                      height: 1.25,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 460),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final screenHeight = constraints.maxHeight;
+                  // Padding atas responsif (max 135 sesuai desain figma)
+                  final topPadding =
+                      (screenHeight * 0.12).clamp(24.0, 135.0);
+                  // Gap sebelum tombol Log in responsif (max 160 sesuai desain figma)
+                  final gapBeforeButton =
+                      (screenHeight * 0.10).clamp(24.0, 160.0);
+
+                  return SingleChildScrollView(
+                    physics: const ClampingScrollPhysics(),
+                    padding: EdgeInsets.only(
+                      left: 20,
+                      right: 20,
+                      top: topPadding,
+                      bottom: 32,
                     ),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Subtitle: Eat better. Get back on track. (regular Space Grotesk 17)
-                  Text(
-                    'Eat better. Get back on track.',
-                    style: GoogleFonts.spaceGrotesk(
-                      fontSize: 17,
-                      fontWeight: FontWeight.normal,
-                      color: const Color(0xFF9CA3AF),
-                      height: 1.4,
-                    ),
-                  ),
-
-                  // sizebox 48
-                  const SizedBox(height: 48),
-
-                  // email dan password
-                  TextFormField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    style: GoogleFonts.spaceGrotesk(
-                      fontSize: 15,
-                      color: Colors.white,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: 'Email address',
-                      hintStyle: GoogleFonts.spaceGrotesk(
-                        fontSize: 15,
-                        color: const Color(0xFF71717A),
-                      ),
-                      prefixIcon: const Icon(
-                        Icons.email_outlined,
-                        color: Color(0xFF71717A),
-                        size: 20,
-                      ),
-                      filled: true,
-                      fillColor: const Color(0xFF18181B),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFF27272A)),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFF27272A)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color(0xFFFF5A16),
-                          width: 1.5,
-                        ),
-                      ),
-                    ),
-                    validator: (val) {
-                      if (val == null || val.isEmpty) {
-                        return 'Please enter your email';
-                      }
-                      if (!val.contains('@')) {
-                        return 'Please enter a valid email';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: _obscurePassword,
-                    style: GoogleFonts.spaceGrotesk(
-                      fontSize: 15,
-                      color: Colors.white,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: 'Password',
-                      hintStyle: GoogleFonts.spaceGrotesk(
-                        fontSize: 15,
-                        color: const Color(0xFF71717A),
-                      ),
-                      prefixIcon: const Icon(
-                        Icons.lock_outline,
-                        color: Color(0xFF71717A),
-                        size: 20,
-                      ),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                          color: const Color(0xFF71717A),
-                          size: 20,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
-                      ),
-                      filled: true,
-                      fillColor: const Color(0xFF18181B),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFF27272A)),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFF27272A)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: Color(0xFFFF5A16),
-                          width: 1.5,
-                        ),
-                      ),
-                    ),
-                    validator: (val) {
-                      if (val == null || val.isEmpty) {
-                        return 'Please enter your password';
-                      }
-                      if (val.length < 6) {
-                        return 'Password must be at least 6 characters';
-                      }
-                      return null;
-                    },
-                  ),
-
-                  // sizebox 12
-                  const SizedBox(height: 12),
-
-                  // forget password
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: GestureDetector(
-                      onTap: () {},
-                      child: Text(
-                        'Forgot password?',
-                        style: GoogleFonts.spaceGrotesk(
-                          color: const Color(0xFF9CA3AF),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // sizebox 32
-                  const SizedBox(height: 32),
-
-                  // -------or-------
-                  Row(
-                    children: [
-                      const Expanded(
-                        child: Divider(
-                          color: Color(0xFF27272A),
-                          thickness: 1,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          'or',
-                          style: GoogleFonts.spaceGrotesk(
-                            color: const Color(0xFF71717A),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      const Expanded(
-                        child: Divider(
-                          color: Color(0xFF27272A),
-                          thickness: 1,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  // sizebox 32
-                  const SizedBox(height: 32),
-
-                  // continue with google
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: OutlinedButton(
-                      onPressed: () {
-                        context
-                            .read<AuthBloc>()
-                            .add(AuthGoogleLoginRequested());
-                      },
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: const Color(0xFF18181B),
-                        side: const BorderSide(
-                          color: Color(0xFF27272A),
-                          width: 1.2,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SvgPicture.string(
-                            _googleSvg,
-                            width: 22,
-                            height: 22,
-                          ),
-                          const SizedBox(width: 12),
+                          // Title: Welcome back to NutriAI (Space Grotesk, semibold 28)
                           Text(
-                            'Continue with Google',
+                            'Welcome back to NutriAI',
                             style: GoogleFonts.spaceGrotesk(
-                              color: Colors.white,
-                              fontSize: 15,
+                              fontSize: (screenHeight < 700) ? 24 : 28,
                               fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                              height: 1.25,
                             ),
+                          ),
+                          const SizedBox(height: 8),
+
+                          // Subtitle: Eat better. Get back on track. (regular Space Grotesk 17)
+                          Text(
+                            'Eat better. Get back on track.',
+                            style: GoogleFonts.spaceGrotesk(
+                              fontSize: (screenHeight < 700) ? 15 : 17,
+                              fontWeight: FontWeight.normal,
+                              color: const Color(0xFF9CA3AF),
+                              height: 1.4,
+                            ),
+                          ),
+
+                          // sizebox 48
+                          const SizedBox(height: 48),
+
+                          // email dan password
+                          TextFormField(
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            style: GoogleFonts.spaceGrotesk(
+                              fontSize: 15,
+                              color: Colors.white,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Email address',
+                              hintStyle: GoogleFonts.spaceGrotesk(
+                                fontSize: 15,
+                                color: const Color(0xFF71717A),
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.email_outlined,
+                                color: Color(0xFF71717A),
+                                size: 20,
+                              ),
+                              filled: true,
+                              fillColor: const Color(0xFF18181B),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 16,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                    const BorderSide(color: Color(0xFF27272A)),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                    const BorderSide(color: Color(0xFF27272A)),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFFF5A16),
+                                  width: 1.5,
+                                ),
+                              ),
+                            ),
+                            validator: (val) {
+                              if (val == null || val.isEmpty) {
+                                return 'Please enter your email';
+                              }
+                              if (!val.contains('@')) {
+                                return 'Please enter a valid email';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          TextFormField(
+                            controller: _passwordController,
+                            obscureText: _obscurePassword,
+                            style: GoogleFonts.spaceGrotesk(
+                              fontSize: 15,
+                              color: Colors.white,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Password',
+                              hintStyle: GoogleFonts.spaceGrotesk(
+                                fontSize: 15,
+                                color: const Color(0xFF71717A),
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.lock_outline,
+                                color: Color(0xFF71717A),
+                                size: 20,
+                              ),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
+                                  color: const Color(0xFF71717A),
+                                  size: 20,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
+                              ),
+                              filled: true,
+                              fillColor: const Color(0xFF18181B),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 16,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                    const BorderSide(color: Color(0xFF27272A)),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                    const BorderSide(color: Color(0xFF27272A)),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFFF5A16),
+                                  width: 1.5,
+                                ),
+                              ),
+                            ),
+                            validator: (val) {
+                              if (val == null || val.isEmpty) {
+                                return 'Please enter your password';
+                              }
+                              if (val.length < 6) {
+                                return 'Password must be at least 6 characters';
+                              }
+                              return null;
+                            },
+                          ),
+
+                          // sizebox 12
+                          const SizedBox(height: 12),
+
+                          // forget password
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: GestureDetector(
+                              onTap: () {},
+                              child: Text(
+                                'Forgot password?',
+                                style: GoogleFonts.spaceGrotesk(
+                                  color: const Color(0xFF9CA3AF),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          // sizebox 32
+                          const SizedBox(height: 32),
+
+                          // -------or-------
+                          Row(
+                            children: [
+                              const Expanded(
+                                child: Divider(
+                                  color: Color(0xFF27272A),
+                                  thickness: 1,
+                                ),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
+                                child: Text(
+                                  'or',
+                                  style: GoogleFonts.spaceGrotesk(
+                                    color: const Color(0xFF71717A),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                              const Expanded(
+                                child: Divider(
+                                  color: Color(0xFF27272A),
+                                  thickness: 1,
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          // sizebox 32
+                          const SizedBox(height: 32),
+
+                          // continue with google
+                          SizedBox(
+                            width: double.infinity,
+                            height: 52,
+                            child: OutlinedButton(
+                              onPressed: () {
+                                context
+                                    .read<AuthBloc>()
+                                    .add(AuthGoogleLoginRequested());
+                              },
+                              style: OutlinedButton.styleFrom(
+                                backgroundColor: const Color(0xFF18181B),
+                                side: const BorderSide(
+                                  color: Color(0xFF27272A),
+                                  width: 1.2,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: 0,
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SvgPicture.string(
+                                    _googleSvg,
+                                    width: 22,
+                                    height: 22,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    'Continue with Google',
+                                    style: GoogleFonts.spaceGrotesk(
+                                      color: Colors.white,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          // sizebox 160 (responsif)
+                          SizedBox(height: gapBeforeButton),
+
+                          // button FF5A16 Log in corner radius 12, padding kanan kiri 12
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: SizedBox(
+                              width: double.infinity,
+                              height: 52,
+                              child: BlocBuilder<AuthBloc, AuthState>(
+                                builder: (context, state) {
+                                  final isLoading = state is AuthLoading;
+                                  return ElevatedButton(
+                                    onPressed: isLoading ? null : _onLogin,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFFF5A16),
+                                      foregroundColor: Colors.white,
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    child: isLoading
+                                        ? const SizedBox(
+                                            width: 24,
+                                            height: 24,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2.5,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                Colors.white,
+                                              ),
+                                            ),
+                                          )
+                                        : Text(
+                                            'Log in',
+                                            style: GoogleFonts.spaceGrotesk(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+
+                          // sizebox 12
+                          const SizedBox(height: 12),
+
+                          // Don’t have an account? Sign Up (warna sign up nya FF5A16)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Don’t have an account? ',
+                                style: GoogleFonts.spaceGrotesk(
+                                  color: const Color(0xFF9CA3AF),
+                                  fontSize: 14,
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    AppRoutes.signup,
+                                  );
+                                },
+                                child: Text(
+                                  'Sign Up',
+                                  style: GoogleFonts.spaceGrotesk(
+                                    color: const Color(0xFFFF5A16),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
-                  ),
-
-                  // sizebox 160
-                  const SizedBox(height: 160),
-
-                  // button FF5A16 Log in corner radius 12, padding kanan kiri 12
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: BlocBuilder<AuthBloc, AuthState>(
-                        builder: (context, state) {
-                          final isLoading = state is AuthLoading;
-                          return ElevatedButton(
-                            onPressed: isLoading ? null : _onLogin,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFFF5A16),
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: isLoading
-                                ? const SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.5,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white,
-                                      ),
-                                    ),
-                                  )
-                                : Text(
-                                    'Log in',
-                                    style: GoogleFonts.spaceGrotesk(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-
-                  // sizebox 12
-                  const SizedBox(height: 12),
-
-                  // Don’t have an account? Sign Up (warna sign up nya FF5A16)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Don’t have an account? ',
-                        style: GoogleFonts.spaceGrotesk(
-                          color: const Color(0xFF9CA3AF),
-                          fontSize: 14,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.pushNamed(context, AppRoutes.signup);
-                        },
-                        child: Text(
-                          'Sign Up',
-                          style: GoogleFonts.spaceGrotesk(
-                            color: const Color(0xFFFF5A16),
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                  );
+                },
               ),
             ),
           ),

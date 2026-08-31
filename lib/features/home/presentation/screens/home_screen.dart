@@ -1,280 +1,611 @@
+import 'dart:math' as math;
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:nutriai/core/constants/app_colors.dart';
-import 'package:nutriai/core/constants/app_strings.dart';
-import 'package:nutriai/core/routes/app_routes.dart';
-import 'package:nutriai/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:nutriai/features/auth/presentation/bloc/auth_event.dart';
-import '../bloc/home_bloc.dart';
-import '../bloc/home_event.dart';
-import '../bloc/home_state.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../../../core/routes/app_routes.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_event.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late int _selectedDayIndex;
+  late List<Map<String, String>> _daysOfWeek;
+
+  @override
+  void initState() {
+    super.initState();
+    _initCurrentWeek();
+  }
+
+  void _initCurrentWeek() {
+    final now = DateTime.now();
+    // Senin sebagai hari pertama dalam minggu (now.weekday: 1=Mon .. 7=Sun)
+    final monday = now.subtract(Duration(days: now.weekday - 1));
+    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+    _daysOfWeek = List.generate(7, (index) {
+      final date = monday.add(Duration(days: index));
+      return {
+        'day': dayNames[index],
+        'date': date.day.toString().padLeft(2, '0'),
+      };
+    });
+
+    // Otomatis memilih tanggal hari ini
+    _selectedDayIndex = now.weekday - 1;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocBuilder<HomeBloc, HomeState>(
-      builder: (context, state) {
-        return Scaffold(
-          backgroundColor: AppColors.background,
-          appBar: AppBar(
-            backgroundColor: AppColors.surface,
-            elevation: 0,
-            title: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryLight,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.eco_rounded,
-                    color: AppColors.primary,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                const Text(
-                  AppStrings.appName,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.logout_rounded, color: AppColors.error),
-                tooltip: 'Logout',
-                onPressed: () {
-                  context.read<AuthBloc>().add(AuthLogoutRequested());
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    AppRoutes.login,
-                    (route) => false,
-                  );
-                },
-              ),
-              const SizedBox(width: 8),
-            ],
-          ),
-          body: RefreshIndicator(
-            onRefresh: () async {
-              context.read<HomeBloc>().add(HomeLoadDashboard());
-            },
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final photoUrl = currentUser?.photoURL;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF121212),
+      body: SafeArea(
+        top: true,
+        bottom: false,
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
             child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(20),
+              physics: const ClampingScrollPhysics(),
+              padding: const EdgeInsets.only(
+                top: 8,
+                left: 20,
+                right: 20,
+                bottom: 36,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Greeting Card
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [
-                          AppColors.primaryGradientStart,
-                          AppColors.primaryGradientEnd,
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.3),
-                          blurRadius: 16,
-                          offset: const Offset(0, 8),
+                  // Top Header: Profile Picture & "Good Morning" + Right Crown & Notification buttons
+                  Row(
+                    children: [
+                      // Avatar Profile (44x44)
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF27272A),
+                          shape: BoxShape.circle,
                         ),
-                      ],
+                        clipBehavior: Clip.antiAlias,
+                        child: photoUrl != null && photoUrl.isNotEmpty
+                            ? Image.network(
+                                photoUrl,
+                                width: 44,
+                                height: 44,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(
+                                  Icons.person,
+                                  color: Colors.white,
+                                  size: 24,
+                                ),
+                              )
+                            : const Icon(
+                                Icons.person,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                      ),
+                      const SizedBox(width: 12),
+
+                      // Teks Good Morning
+                      Text(
+                        'Good Morning',
+                        style: GoogleFonts.spaceGrotesk(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const Spacer(),
+
+                      // Crown Button (lingkaran gelap)
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF1E1E1E),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.workspace_premium_outlined,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+
+                      // Notification Bell Button (lingkaran gelap)
+                      GestureDetector(
+                        onTap: () {
+                          // Opsi logout saat long press atau tap
+                          _showAccountMenu(context);
+                        },
+                        child: Container(
+                          width: 42,
+                          height: 42,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF1E1E1E),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.notifications_none_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // sizebox 24
+                  const SizedBox(height: 24),
+
+                  // Container Hari dan Tanggal (H110, warna putih, corner radius 28)
+                  Container(
+                    height: 110,
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(28),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: List.generate(_daysOfWeek.length, (index) {
+                        final isSelected = index == _selectedDayIndex;
+                        final dayItem = _daysOfWeek[index];
+
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedDayIndex = index;
+                            });
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            width: isSelected ? 46 : 42,
+                            height: 90,
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? const Color(0xFFDDC0FF)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                // Nama Hari
+                                Text(
+                                  dayItem['day']!,
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: const Color(0xFF121212),
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+
+                                // Tanggal: jika terpilih dibungkus lingkaran hitam 121212 dengan teks putih
+                                isSelected
+                                    ? Container(
+                                        width: 34,
+                                        height: 34,
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFF121212),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          dayItem['date']!,
+                                          style: GoogleFonts.spaceGrotesk(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      )
+                                    : Container(
+                                        width: 34,
+                                        height: 34,
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          dayItem['date']!,
+                                          style: GoogleFonts.spaceGrotesk(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                            color: const Color(0xFF121212),
+                                          ),
+                                        ),
+                                      ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
+
+                  // sizebox 24
+                  const SizedBox(height: 24),
+
+                  // Count Your Daily Calories, Space Grotesk, semibold 24
+                  Text(
+                    'Count Your Daily Calories',
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+
+                  // sizebox 20
+                  const SizedBox(height: 20),
+
+                  // Container H229, DDC0FF, corner radius 24
+                  Container(
+                    height: 229,
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFDDC0FF),
+                      borderRadius: BorderRadius.circular(24),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          AppStrings.homeGreeting,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
+                        // Kiri atas: Calories, Space Grotesk, semibold, 20
                         Text(
-                          AppStrings.homeSubtitle,
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            fontSize: 13,
+                          'Calories',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF121212),
                           ),
                         ),
-                        const SizedBox(height: 20),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            _buildStatBadge(
-                              'Calories',
-                              '${state.caloriesCurrent} / ${state.caloriesTarget} kcal',
-                              Icons.local_fire_department_rounded,
+
+                        // Tengah bawah: Parameter 0-100 dengan buletan 1672 left
+                        Expanded(
+                          child: Center(
+                            child: SizedBox(
+                              width: 170,
+                              height: 150,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  // Lengkungan Arc Parameter 0 - 100
+                                  CustomPaint(
+                                    size: const Size(170, 150),
+                                    painter: _ArcGaugePainter(progress: 0.5),
+                                  ),
+
+                                  // Label "0" di ujung kiri bawah arc
+                                  Positioned(
+                                    left: 8,
+                                    bottom: 12,
+                                    child: Text(
+                                      '0',
+                                      style: GoogleFonts.spaceGrotesk(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF121212),
+                                      ),
+                                    ),
+                                  ),
+
+                                  // Label "100" di ujung kanan bawah arc
+                                  Positioned(
+                                    right: 8,
+                                    bottom: 12,
+                                    child: Text(
+                                      '100',
+                                      style: GoogleFonts.spaceGrotesk(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF121212),
+                                      ),
+                                    ),
+                                  ),
+
+                                  // Buletan di dalam (1672 left)
+                                  Container(
+                                    width: 96,
+                                    height: 96,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(alpha: 0.06),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          '1672',
+                                          style: GoogleFonts.spaceGrotesk(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.bold,
+                                            color: const Color(0xFF121212),
+                                            height: 1.1,
+                                          ),
+                                        ),
+                                        Text(
+                                          'left',
+                                          style: GoogleFonts.spaceGrotesk(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                            color: const Color(0xFF474747),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                            _buildStatBadge(
-                              'Water',
-                              '${state.waterLiters} / ${state.waterTarget} L',
-                              Icons.water_drop_rounded,
-                            ),
-                          ],
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 28),
 
-                  // Today's Meals Section
-                  const Text(
-                    AppStrings.mealsToday,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
+                  // sizebox 20
+                  const SizedBox(height: 20),
 
-                  ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: state.todayMeals.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      final meal = state.todayMeals[index];
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: AppColors.border),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryLight,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: const Icon(
-                                Icons.restaurant,
-                                color: AppColors.primary,
-                                size: 20,
-                              ),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Text(
-                                meal,
-                                style: const TextStyle(
-                                  fontSize: 15,
+                  // 2 Grid: 1 warna F5F378 (Carbs), 1 warna 45C588 (Protein)
+                  Row(
+                    children: [
+                      // Grid 1: Carbs (F5F378)
+                      Expanded(
+                        child: Container(
+                          height: 140,
+                          padding: const EdgeInsets.all(18),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF5F378),
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Carbs',
+                                style: GoogleFonts.spaceGrotesk(
+                                  fontSize: 18,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary,
+                                  color: const Color(0xFF121212),
                                 ),
                               ),
-                            ),
-                            const Icon(
-                              Icons.check_circle_rounded,
-                              color: AppColors.primary,
-                              size: 22,
-                            ),
-                          ],
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        '140g',
+                                        style: GoogleFonts.spaceGrotesk(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: const Color(0xFF121212),
+                                        ),
+                                      ),
+                                      Text(
+                                        ' --- 200g',
+                                        style: GoogleFonts.spaceGrotesk(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          color: const Color(0xFF474747),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: LinearProgressIndicator(
+                                      value: 140 / 200,
+                                      minHeight: 8,
+                                      backgroundColor:
+                                          Colors.white.withValues(alpha: 0.7),
+                                      valueColor:
+                                          const AlwaysStoppedAnimation<Color>(
+                                        Color(0xFF121212),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                      );
-                    },
+                      ),
+                      const SizedBox(width: 16),
+
+                      // Grid 2: Protein (45C588)
+                      Expanded(
+                        child: Container(
+                          height: 140,
+                          padding: const EdgeInsets.all(18),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF45C588),
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Protein',
+                                style: GoogleFonts.spaceGrotesk(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF121212),
+                                ),
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        '85g',
+                                        style: GoogleFonts.spaceGrotesk(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: const Color(0xFF121212),
+                                        ),
+                                      ),
+                                      Text(
+                                        ' --- 120g',
+                                        style: GoogleFonts.spaceGrotesk(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          color: const Color(0xFF474747),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: LinearProgressIndicator(
+                                      value: 85 / 120,
+                                      minHeight: 8,
+                                      backgroundColor:
+                                          Colors.white.withValues(alpha: 0.7),
+                                      valueColor:
+                                          const AlwaysStoppedAnimation<Color>(
+                                        Color(0xFF121212),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
           ),
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: state.selectedTab,
-            selectedItemColor: AppColors.primary,
-            unselectedItemColor: AppColors.textMuted,
-            backgroundColor: AppColors.surface,
-            elevation: 8,
-            type: BottomNavigationBarType.fixed,
-            onTap: (index) {
-              context.read<HomeBloc>().add(HomeChangeTab(index));
-            },
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.dashboard_outlined),
-                activeIcon: Icon(Icons.dashboard_rounded),
-                label: 'Dashboard',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.restaurant_menu_outlined),
-                activeIcon: Icon(Icons.restaurant_menu_rounded),
-                label: 'Diet Plan',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.analytics_outlined),
-                activeIcon: Icon(Icons.analytics_rounded),
-                label: 'Analytics',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline),
-                activeIcon: Icon(Icons.person_rounded),
-                label: 'Profile',
-              ),
-            ],
+        ),
+      ),
+    );
+  }
+
+  void _showAccountMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1E1E1E),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.logout_rounded, color: Colors.redAccent),
+                  title: Text(
+                    'Log out',
+                    style: GoogleFonts.spaceGrotesk(
+                      color: Colors.redAccent,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.read<AuthBloc>().add(AuthLogoutRequested());
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      AppRoutes.login,
+                      (route) => false,
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         );
       },
     );
   }
+}
 
-  Widget _buildStatBadge(String label, String value, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: Colors.white, size: 16),
-          const SizedBox(width: 6),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              Text(
-                value,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+/// Custom Painter untuk lengkungan parameter 0-100 kalori
+class _ArcGaugePainter extends CustomPainter {
+  final double progress; // 0.0 hingga 1.0 (0.5 = 50%)
+
+  const _ArcGaugePainter({required this.progress});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2 + 6);
+    final radius = (size.width - 24) / 2;
+    const strokeWidth = 10.0;
+
+    // Sudut busur lengkungan: dari 145 derajat hingga 395 derajat (~250 derajat)
+    const startAngle = math.pi * 0.8;
+    const totalSweep = math.pi * 1.4;
+
+    // Background track lengkungan (putih/halus)
+    final trackPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.5)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      startAngle,
+      totalSweep,
+      false,
+      trackPaint,
     );
+
+    // Active progress arc (warna hitam 121212)
+    final activePaint = Paint()
+      ..color = const Color(0xFF121212)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    final currentSweep = totalSweep * progress.clamp(0.0, 1.0);
+    if (currentSweep > 0) {
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        startAngle,
+        currentSweep,
+        false,
+        activePaint,
+      );
+    }
   }
+
+  @override
+  bool shouldRepaint(covariant _ArcGaugePainter oldDelegate) =>
+      oldDelegate.progress != progress;
 }
