@@ -276,60 +276,35 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
 
-                        // Tengah bawah: Parameter 0-100 dengan buletan 1672 left
+                        // Tengah bawah: Parameter 0-100 dengan buletan 1672 Left
                         Expanded(
                           child: Center(
                             child: SizedBox(
-                              width: 170,
-                              height: 150,
+                              width: 190,
+                              height: 165,
                               child: Stack(
                                 alignment: Alignment.center,
                                 children: [
-                                  // Lengkungan Arc Parameter 0 - 100
-                                  CustomPaint(
-                                    size: const Size(170, 150),
-                                    painter: _ArcGaugePainter(progress: 0.5),
-                                  ),
-
-                                  // Label "0" di ujung kiri bawah arc
-                                  Positioned(
-                                    left: 8,
-                                    bottom: 12,
-                                    child: Text(
-                                      '0',
-                                      style: GoogleFonts.spaceGrotesk(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: const Color(0xFF121212),
+                                  // Lengkungan Arc Parameter 0 - 100 Tebal
+                                  Positioned.fill(
+                                    child: CustomPaint(
+                                      painter: const _ArcGaugePainter(
+                                        progress: 0.53,
                                       ),
                                     ),
                                   ),
 
-                                  // Label "100" di ujung kanan bawah arc
-                                  Positioned(
-                                    right: 8,
-                                    bottom: 12,
-                                    child: Text(
-                                      '100',
-                                      style: GoogleFonts.spaceGrotesk(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: const Color(0xFF121212),
-                                      ),
-                                    ),
-                                  ),
-
-                                  // Buletan di dalam (1672 left)
+                                  // Buletan di dalam (W: 121.12, H: 121.12)
                                   Container(
-                                    width: 96,
-                                    height: 96,
+                                    width: 121.12,
+                                    height: 121.12,
                                     decoration: BoxDecoration(
-                                      color: Colors.white,
+                                      color: Colors.white.withValues(alpha: 0.90),
                                       shape: BoxShape.circle,
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Colors.black.withValues(alpha: 0.06),
-                                          blurRadius: 10,
+                                          color: Colors.black.withValues(alpha: 0.05),
+                                          blurRadius: 14,
                                           offset: const Offset(0, 4),
                                         ),
                                       ],
@@ -340,21 +315,50 @@ class _HomeScreenState extends State<HomeScreen> {
                                         Text(
                                           '1672',
                                           style: GoogleFonts.spaceGrotesk(
-                                            fontSize: 22,
+                                            fontSize: 28,
                                             fontWeight: FontWeight.bold,
                                             color: const Color(0xFF121212),
                                             height: 1.1,
                                           ),
                                         ),
+                                        const SizedBox(height: 2),
                                         Text(
-                                          'left',
+                                          'Left',
                                           style: GoogleFonts.spaceGrotesk(
-                                            fontSize: 12,
+                                            fontSize: 14,
                                             fontWeight: FontWeight.w500,
-                                            color: const Color(0xFF474747),
+                                            color: const Color(0xFF121212),
                                           ),
                                         ),
                                       ],
+                                    ),
+                                  ),
+
+                                  // Label "0" di bawah ujung kiri busur hitam
+                                  Positioned(
+                                    left: 18,
+                                    bottom: 6,
+                                    child: Text(
+                                      '0',
+                                      style: GoogleFonts.spaceGrotesk(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF121212),
+                                      ),
+                                    ),
+                                  ),
+
+                                  // Label "100" di bawah ujung kanan busur
+                                  Positioned(
+                                    right: 18,
+                                    bottom: 6,
+                                    child: Text(
+                                      '100',
+                                      style: GoogleFonts.spaceGrotesk(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF121212),
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -407,7 +411,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ),
                                       ),
                                       Text(
-                                        ' --- 200g',
+                                        '200g',
                                         style: GoogleFonts.spaceGrotesk(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w500,
@@ -473,7 +477,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         ),
                                       ),
                                       Text(
-                                        ' --- 120g',
+                                        '120g',
                                         style: GoogleFonts.spaceGrotesk(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w500,
@@ -563,17 +567,19 @@ class _ArcGaugePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2 + 6);
-    final radius = (size.width - 24) / 2;
-    const strokeWidth = 10.0;
+    final center = Offset(size.width / 2, size.height / 2);
+    // Ditebalkan sesuai gambar (strokeWidth: 24.0)
+    const strokeWidth = 24.0;
+    // Radius ke garis tengah busur sehingga pas memeluk lingkaran 121.12 (radius 60.56)
+    const radius = 73.5;
 
-    // Sudut busur lengkungan: dari 145 derajat hingga 395 derajat (~250 derajat)
-    const startAngle = math.pi * 0.8;
-    const totalSweep = math.pi * 1.4;
+    // Sudut lengkungan busur: dari kiri melewati puncak jam 12 ke kanan
+    const startAngle = math.pi * 0.85;
+    const totalSweep = math.pi * 1.30;
 
-    // Background track lengkungan (putih/halus)
+    // Background track lengkungan (transparan lembut sesuai gambar)
     final trackPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.5)
+      ..color = Colors.white.withValues(alpha: 0.35)
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;

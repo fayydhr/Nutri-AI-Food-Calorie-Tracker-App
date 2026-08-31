@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/signup_screen.dart';
-import '../../features/home/presentation/screens/home_screen.dart';
+import '../../features/main/presentation/screens/main_navigation_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_step1_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_step2_screen.dart';
@@ -26,6 +26,6 @@ class AppRoutes {
         onboardingStep3: (context) => const Scaffold(body: SafeArea(child: OnboardingStep3Screen())),
         login: (context) => const LoginScreen(),
         signup: (context) => const SignupScreen(),
-        home: (context) => const HomeScreen(),
+        home: (context) => const MainNavigationScreen(),
       };
 }
