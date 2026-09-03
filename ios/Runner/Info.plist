@@ -43,7 +43,9 @@
 	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>NutriAI requires camera access to scan food and analyze calories.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>NutriAI requires photo library access to pick food images for calorie analysis.</string>
 </dict>
 </plist>

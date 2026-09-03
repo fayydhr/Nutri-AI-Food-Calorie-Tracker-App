@@ -1,8 +1,144 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 
-class ScannerScreen extends StatelessWidget {
+class ScannerScreen extends StatefulWidget {
   const ScannerScreen({super.key});
+
+  @override
+  State<ScannerScreen> createState() => _ScannerScreenState();
+}
+
+class _ScannerScreenState extends State<ScannerScreen> {
+  final ImagePicker _picker = ImagePicker();
+  XFile? _selectedImage;
+  bool _isAnalyzing = false;
+  Map<String, String>? _scanResult;
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: source,
+        maxWidth: 1200,
+        maxHeight: 1200,
+        imageQuality: 85,
+      );
+
+      if (image == null) return;
+
+      setState(() {
+        _selectedImage = image;
+        _isAnalyzing = true;
+        _scanResult = null;
+      });
+
+      // Simulate AI analysis process
+      await Future.delayed(const Duration(seconds: 2));
+
+      if (!mounted) return;
+
+      setState(() {
+        _isAnalyzing = false;
+        _scanResult = {
+          'foodName': 'Grilled Chicken & Avocado Salad',
+          'calories': '520 kcal',
+          'protein': '42g',
+          'carbs': '18g',
+          'fat': '24g',
+          'confidence': '96% AI Accuracy',
+        };
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isAnalyzing = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to access ${source == ImageSource.camera ? 'camera' : 'gallery'}: $e'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
+  }
+
+  void _showPickerOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1E1E1E),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3F3F46),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  'Select Image Source',
+                  style: GoogleFonts.spaceGrotesk(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ListTile(
+                  leading: const ContainerIcon(
+                    icon: Icons.camera_alt_rounded,
+                    color: Color(0xFFFF5A16),
+                  ),
+                  title: Text(
+                    'Take a Photo (Camera)',
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 16,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImage(ImageSource.camera);
+                  },
+                ),
+                const Divider(color: Color(0xFF2E2E2E)),
+                ListTile(
+                  leading: const ContainerIcon(
+                    icon: Icons.photo_library_rounded,
+                    color: Color(0xFF45C588),
+                  ),
+                  title: Text(
+                    'Choose from Gallery',
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 16,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImage(ImageSource.gallery);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +157,7 @@ class ScannerScreen extends StatelessWidget {
                 top: 14,
                 left: 20,
                 right: 20,
-                bottom: 36,
+                bottom: 120,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -45,68 +181,123 @@ class ScannerScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
 
-                  // Scanner Viewfinder Mockup
-                  Container(
-                    height: 280,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1E1E1E),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: const Color(0xFF2E2E2E), width: 1),
-                    ),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        // Viewfinder Corner Accents
-                        Container(
-                          width: 200,
-                          height: 200,
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: const Color(0xFFFF5A16).withValues(alpha: 0.6),
-                              width: 2,
-                            ),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.center_focus_weak_rounded,
-                              color: Color(0xFFFF5A16),
-                              size: 48,
-                            ),
-                          ),
+                  // Scanner Viewfinder Container / Image Preview
+                  GestureDetector(
+                    onTap: () => _showPickerOptions(context),
+                    child: Container(
+                      height: 320,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E1E1E),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: _selectedImage != null
+                              ? const Color(0xFFFF5A16)
+                              : const Color(0xFF2E2E2E),
+                          width: 1.5,
                         ),
-                        Positioned(
-                          bottom: 20,
-                          child: Text(
-                            'Align food within the frame',
-                            style: GoogleFonts.spaceGrotesk(
-                              fontSize: 13,
-                              color: const Color(0xFF71717A),
-                            ),
-                          ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(22),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            if (_selectedImage != null)
+                              Image.file(
+                                File(_selectedImage!.path),
+                                width: double.infinity,
+                                height: double.infinity,
+                                fit: BoxFit.cover,
+                              )
+                            else ...[
+                              // Viewfinder Mockup
+                              Container(
+                                width: 220,
+                                height: 220,
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: const Color(0xFFFF5A16)
+                                        .withValues(alpha: 0.6),
+                                    width: 2,
+                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.center_focus_weak_rounded,
+                                    color: Color(0xFFFF5A16),
+                                    size: 56,
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                bottom: 20,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.6),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    'Tap to capture or upload from gallery',
+                                    style: GoogleFonts.spaceGrotesk(
+                                      fontSize: 13,
+                                      color: const Color(0xFFD4D4D8),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+
+                            // Analyzing Overlay
+                            if (_isAnalyzing)
+                              Container(
+                                color: Colors.black.withValues(alpha: 0.75),
+                                child: Center(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const CircularProgressIndicator(
+                                        color: Color(0xFFFF5A16),
+                                        strokeWidth: 3,
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        'Analyzing food with AI...',
+                                        style: GoogleFonts.spaceGrotesk(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
+
                   const SizedBox(height: 24),
 
-                  // Actions: Snap Button & Upload from Gallery
+                  // Actions Buttons Row
                   Row(
                     children: [
+                      // Camera Button
                       Expanded(
                         child: ElevatedButton.icon(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Camera scanner ready!'),
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.camera_alt_rounded, color: Colors.white),
+                          onPressed: () => _pickImage(ImageSource.camera),
+                          icon: const Icon(
+                            Icons.camera_alt_rounded,
+                            color: Colors.white,
+                          ),
                           label: Text(
-                            'Scan Food',
+                            'Take Photo',
                             style: GoogleFonts.spaceGrotesk(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -117,26 +308,124 @@ class ScannerScreen extends StatelessWidget {
                             backgroundColor: const Color(0xFFFF5A16),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                           ),
                         ),
                       ),
                       const SizedBox(width: 14),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1E1E1E),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: const Color(0xFF2E2E2E)),
-                        ),
-                        child: IconButton(
-                          onPressed: () {},
-                          icon: const Icon(Icons.photo_library_outlined, color: Colors.white),
-                          padding: const EdgeInsets.all(14),
+
+                      // Gallery Button
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () => _pickImage(ImageSource.gallery),
+                          icon: const Icon(
+                            Icons.photo_library_rounded,
+                            color: Colors.white,
+                          ),
+                          label: Text(
+                            'Gallery',
+                            style: GoogleFonts.spaceGrotesk(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF27272A),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: const BorderSide(
+                                color: Color(0xFF3F3F46),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
+
+                  // AI Scan Results Card
+                  if (_scanResult != null) ...[
+                    const SizedBox(height: 24),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E1E1E),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: const Color(0xFF2E2E2E)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                _scanResult!['foodName']!,
+                                style: GoogleFonts.spaceGrotesk(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF45C588)
+                                      .withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  _scanResult!['confidence']!,
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF45C588),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Macro Grid
+                          Row(
+                            children: [
+                              _buildMacroTile(
+                                'Calories',
+                                _scanResult!['calories']!,
+                                const Color(0xFFFF5A16),
+                              ),
+                              const SizedBox(width: 10),
+                              _buildMacroTile(
+                                'Protein',
+                                _scanResult!['protein']!,
+                                const Color(0xFF45C588),
+                              ),
+                              const SizedBox(width: 10),
+                              _buildMacroTile(
+                                'Carbs',
+                                _scanResult!['carbs']!,
+                                const Color(0xFFF5F378),
+                              ),
+                              const SizedBox(width: 10),
+                              _buildMacroTile(
+                                'Fat',
+                                _scanResult!['fat']!,
+                                const Color(0xFFDDC0FF),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -145,4 +434,60 @@ class ScannerScreen extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildMacroTile(String label, String value, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF27272A),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Column(
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.spaceGrotesk(
+                fontSize: 12,
+                color: const Color(0xFF9CA3AF),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: GoogleFonts.spaceGrotesk(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
+
+class ContainerIcon extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+
+  const ContainerIcon({
+    super.key,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(icon, color: color, size: 22),
+    );
+  }
+}
+
