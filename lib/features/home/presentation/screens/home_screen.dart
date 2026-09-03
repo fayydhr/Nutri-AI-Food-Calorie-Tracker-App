@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/services/nutrition_log_service.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 
@@ -254,259 +255,291 @@ class _HomeScreenState extends State<HomeScreen> {
                   // sizebox 20
                   const SizedBox(height: 20),
 
-                  // Container H229, DDC0FF, corner radius 24
-                  Container(
-                    height: 229,
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFDDC0FF),
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Kiri atas: Calories, Space Grotesk, semibold, 20
-                        Text(
-                          'Calories',
-                          style: GoogleFonts.spaceGrotesk(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF121212),
-                          ),
-                        ),
+                  ListenableBuilder(
+                    listenable: NutritionLogService(),
+                    builder: (context, child) {
+                      final service = NutritionLogService();
+                      final consumed = service.consumedCalories;
+                      final target = service.targetCalories;
+                      final remaining = (target - consumed).clamp(0, target);
+                      final progress = (consumed / target).clamp(0.0, 1.0);
 
-                        // Tengah bawah: Parameter 0-100 dengan buletan 1672 Left
-                        Expanded(
-                          child: Center(
-                            child: SizedBox(
-                              width: 190,
-                              height: 165,
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  // Lengkungan Arc Parameter 0 - 100 Tebal
-                                  Positioned.fill(
-                                    child: CustomPaint(
-                                      painter: const _ArcGaugePainter(
-                                        progress: 0.53,
-                                      ),
-                                    ),
+                      final carbs = service.consumedCarbs;
+                      final protein = service.consumedProtein;
+
+                      return Column(
+                        children: [
+                          // Container H229, DDC0FF, corner radius 24
+                          Container(
+                            height: 229,
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFDDC0FF),
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Kiri atas: Calories, Space Grotesk, semibold, 20
+                                Text(
+                                  'Calories',
+                                  style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF121212),
                                   ),
+                                ),
 
-                                  // Buletan di dalam (W: 121.12, H: 121.12)
-                                  Container(
-                                    width: 121.12,
-                                    height: 121.12,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.90),
-                                      shape: BoxShape.circle,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withValues(alpha: 0.05),
-                                          blurRadius: 14,
-                                          offset: const Offset(0, 4),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          '1672',
-                                          style: GoogleFonts.spaceGrotesk(
-                                            fontSize: 28,
-                                            fontWeight: FontWeight.bold,
-                                            color: const Color(0xFF121212),
-                                            height: 1.1,
+                                // Tengah bawah: Parameter 0-100 dengan buletan
+                                Expanded(
+                                  child: Center(
+                                    child: SizedBox(
+                                      width: 190,
+                                      height: 165,
+                                      child: Stack(
+                                        alignment: Alignment.center,
+                                        children: [
+                                          // Lengkungan Arc Parameter
+                                          Positioned.fill(
+                                            child: CustomPaint(
+                                              painter: _ArcGaugePainter(
+                                                progress: progress,
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          'Left',
-                                          style: GoogleFonts.spaceGrotesk(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500,
-                                            color: const Color(0xFF121212),
+
+                                          // Buletan di dalam
+                                          Container(
+                                            width: 121.12,
+                                            height: 121.12,
+                                            decoration: BoxDecoration(
+                                              color: Colors.white
+                                                  .withValues(alpha: 0.90),
+                                              shape: BoxShape.circle,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.black
+                                                      .withValues(alpha: 0.05),
+                                                  blurRadius: 14,
+                                                  offset: const Offset(0, 4),
+                                                ),
+                                              ],
+                                            ),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  '$remaining',
+                                                  style: GoogleFonts.spaceGrotesk(
+                                                    fontSize: 26,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: const Color(0xFF121212),
+                                                    height: 1.1,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  'Left',
+                                                  style: GoogleFonts.spaceGrotesk(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w500,
+                                                    color: const Color(0xFF121212),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
 
-                                  // Label "0" di bawah ujung kiri busur hitam
-                                  Positioned(
-                                    left: 18,
-                                    bottom: 6,
-                                    child: Text(
-                                      '0',
-                                      style: GoogleFonts.spaceGrotesk(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                        color: const Color(0xFF121212),
+                                          // Label "0"
+                                          Positioned(
+                                            left: 18,
+                                            bottom: 6,
+                                            child: Text(
+                                              '0',
+                                              style: GoogleFonts.spaceGrotesk(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600,
+                                                color: const Color(0xFF121212),
+                                              ),
+                                            ),
+                                          ),
+
+                                          // Label "2000"
+                                          Positioned(
+                                            right: 14,
+                                            bottom: 6,
+                                            child: Text(
+                                              '$target',
+                                              style: GoogleFonts.spaceGrotesk(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                color: const Color(0xFF121212),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),
-
-                                  // Label "100" di bawah ujung kanan busur
-                                  Positioned(
-                                    right: 18,
-                                    bottom: 6,
-                                    child: Text(
-                                      '100',
-                                      style: GoogleFonts.spaceGrotesk(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                        color: const Color(0xFF121212),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
 
-                  // sizebox 20
-                  const SizedBox(height: 20),
+                          // sizebox 20
+                          const SizedBox(height: 20),
 
-                  // 2 Grid: 1 warna F5F378 (Carbs), 1 warna 45C588 (Protein)
-                  Row(
-                    children: [
-                      // Grid 1: Carbs (F5F378)
-                      Expanded(
-                        child: Container(
-                          height: 140,
-                          padding: const EdgeInsets.all(18),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF5F378),
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          // 2 Grid: Carbs (F5F378), Protein (45C588)
+                          Row(
                             children: [
-                              Text(
-                                'Carbs',
-                                style: GoogleFonts.spaceGrotesk(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF121212),
-                                ),
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
+                              // Grid 1: Carbs
+                              Expanded(
+                                child: Container(
+                                  height: 140,
+                                  padding: const EdgeInsets.all(18),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF5F378),
+                                    borderRadius: BorderRadius.circular(24),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        '140g',
+                                        'Carbs',
                                         style: GoogleFonts.spaceGrotesk(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
                                           color: const Color(0xFF121212),
                                         ),
                                       ),
-                                      Text(
-                                        '200g',
-                                        style: GoogleFonts.spaceGrotesk(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w500,
-                                          color: const Color(0xFF474747),
-                                        ),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Text(
+                                                '${carbs}g',
+                                                style: GoogleFonts.spaceGrotesk(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: const Color(0xFF121212),
+                                                ),
+                                              ),
+                                              Text(
+                                                ' / 200g',
+                                                style: GoogleFonts.spaceGrotesk(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: const Color(0xFF474747),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 8),
+                                          ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            child: LinearProgressIndicator(
+                                              value: (carbs / 200).clamp(0.0, 1.0),
+                                              minHeight: 8,
+                                              backgroundColor: Colors.white
+                                                  .withValues(alpha: 0.7),
+                                              valueColor:
+                                                  const AlwaysStoppedAnimation<
+                                                      Color>(
+                                                Color(0xFF121212),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 8),
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: LinearProgressIndicator(
-                                      value: 140 / 200,
-                                      minHeight: 8,
-                                      backgroundColor:
-                                          Colors.white.withValues(alpha: 0.7),
-                                      valueColor:
-                                          const AlwaysStoppedAnimation<Color>(
-                                        Color(0xFF121212),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-
-                      // Grid 2: Protein (45C588)
-                      Expanded(
-                        child: Container(
-                          height: 140,
-                          padding: const EdgeInsets.all(18),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF45C588),
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Protein',
-                                style: GoogleFonts.spaceGrotesk(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF121212),
                                 ),
                               ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
+                              const SizedBox(width: 16),
+
+                              // Grid 2: Protein
+                              Expanded(
+                                child: Container(
+                                  height: 140,
+                                  padding: const EdgeInsets.all(18),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF45C588),
+                                    borderRadius: BorderRadius.circular(24),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        '85g',
+                                        'Protein',
                                         style: GoogleFonts.spaceGrotesk(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
                                           color: const Color(0xFF121212),
                                         ),
                                       ),
-                                      Text(
-                                        '120g',
-                                        style: GoogleFonts.spaceGrotesk(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w500,
-                                          color: const Color(0xFF474747),
-                                        ),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Text(
+                                                '${protein}g',
+                                                style: GoogleFonts.spaceGrotesk(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: const Color(0xFF121212),
+                                                ),
+                                              ),
+                                              Text(
+                                                ' / 120g',
+                                                style: GoogleFonts.spaceGrotesk(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: const Color(0xFF474747),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 8),
+                                          ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            child: LinearProgressIndicator(
+                                              value: (protein / 120).clamp(0.0, 1.0),
+                                              minHeight: 8,
+                                              backgroundColor: Colors.white
+                                                  .withValues(alpha: 0.7),
+                                              valueColor:
+                                                  const AlwaysStoppedAnimation<
+                                                      Color>(
+                                                Color(0xFF121212),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 8),
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: LinearProgressIndicator(
-                                      value: 85 / 120,
-                                      minHeight: 8,
-                                      backgroundColor:
-                                          Colors.white.withValues(alpha: 0.7),
-                                      valueColor:
-                                          const AlwaysStoppedAnimation<Color>(
-                                        Color(0xFF121212),
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ),
                             ],
                           ),
-                        ),
-                      ),
-                    ],
+                        ],
+                      );
+                    },
                   ),
                 ],
               ),

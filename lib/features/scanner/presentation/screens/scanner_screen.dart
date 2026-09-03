@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../../core/services/ai_food_scanner_service.dart';
+import '../../../../core/services/nutrition_log_service.dart';
 
 class ScannerScreen extends StatefulWidget {
   const ScannerScreen({super.key});
@@ -33,21 +35,13 @@ class _ScannerScreenState extends State<ScannerScreen> {
         _scanResult = null;
       });
 
-      // Simulate AI analysis process
-      await Future.delayed(const Duration(seconds: 2));
+      final result = await AIFoodScannerService.analyzeFoodImage(File(image.path));
 
       if (!mounted) return;
 
       setState(() {
         _isAnalyzing = false;
-        _scanResult = {
-          'foodName': 'Grilled Chicken & Avocado Salad',
-          'calories': '520 kcal',
-          'protein': '42g',
-          'carbs': '18g',
-          'fat': '24g',
-          'confidence': '96% AI Accuracy',
-        };
+        _scanResult = result;
       });
     } catch (e) {
       if (!mounted) return;
@@ -68,6 +62,53 @@ class _ScannerScreenState extends State<ScannerScreen> {
         ),
       );
     }
+  }
+
+  void _logToDailyIntake() {
+    if (_scanResult == null) return;
+
+    final foodName = _scanResult!['foodName'] ?? 'Scanned Meal';
+    final calStr = _scanResult!['calories']?.replaceAll(RegExp(r'[^0-9]'), '') ?? '520';
+    final protStr = _scanResult!['protein']?.replaceAll(RegExp(r'[^0-9]'), '') ?? '42';
+    final carbStr = _scanResult!['carbs']?.replaceAll(RegExp(r'[^0-9]'), '') ?? '18';
+    final fatStr = _scanResult!['fat']?.replaceAll(RegExp(r'[^0-9]'), '') ?? '24';
+
+    final calories = int.tryParse(calStr) ?? 520;
+    final protein = int.tryParse(protStr) ?? 42;
+    final carbs = int.tryParse(carbStr) ?? 18;
+    final fat = int.tryParse(fatStr) ?? 24;
+
+    NutritionLogService().addScannedFood(
+      foodName: foodName,
+      calories: calories,
+      protein: protein,
+      carbs: carbs,
+      fat: fat,
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle_rounded, color: Colors.white),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Added $calories kcal ($foodName) to your Daily Intake!',
+                style: GoogleFonts.spaceGrotesk(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF45C588),
+        duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
   }
 
   void _showPickerOptions(BuildContext context) {
@@ -428,6 +469,35 @@ class _ScannerScreenState extends State<ScannerScreen> {
                                 const Color(0xFFDDC0FF),
                               ),
                             ],
+                          ),
+                          const SizedBox(height: 18),
+
+                          // Add to Daily Intake Button
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: _logToDailyIntake,
+                              icon: const Icon(
+                                Icons.add_circle_outline_rounded,
+                                color: Colors.white,
+                              ),
+                              label: Text(
+                                'Add to Daily Intake',
+                                style: GoogleFonts.spaceGrotesk(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF45C588),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                            ),
                           ),
                         ],
                       ),
