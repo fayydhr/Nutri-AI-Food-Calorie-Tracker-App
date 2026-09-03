@@ -54,10 +54,17 @@ class _ScannerScreenState extends State<ScannerScreen> {
       setState(() {
         _isAnalyzing = false;
       });
+
+      String errorMessage = 'Failed to access ${source == ImageSource.camera ? 'camera' : 'gallery'}';
+      if (e.toString().contains('channel-error') || e.toString().contains('MissingPluginException')) {
+        errorMessage = 'Please perform a full app restart (rebuild app) to register the newly added Camera/Gallery native plugin.';
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to access ${source == ImageSource.camera ? 'camera' : 'gallery'}: $e'),
+          content: Text(errorMessage),
           backgroundColor: Colors.redAccent,
+          duration: const Duration(seconds: 4),
         ),
       );
     }
