@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math' as math;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -63,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 top: 8,
                 left: 20,
                 right: 20,
-                bottom: 36,
+                bottom: 120,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -537,6 +538,64 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ],
                           ),
+
+                          // sizebox 24
+                          const SizedBox(height: 24),
+
+                          // Header Today's History
+                          Text(
+                            "Today's History",
+                            style: GoogleFonts.spaceGrotesk(
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          if (service.loggedItems.isEmpty)
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E1E1E),
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(
+                                  color: const Color(0xFF2E2E2E),
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  const Icon(
+                                    Icons.history_rounded,
+                                    size: 40,
+                                    color: Color(0xFF9CA3AF),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    'No history yet today',
+                                    style: GoogleFonts.spaceGrotesk(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Scan your plate using the camera to track your food intake here.',
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.spaceGrotesk(
+                                      fontSize: 13,
+                                      color: const Color(0xFF9CA3AF),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          else
+                            ...service.loggedItems
+                                .map((item) => _buildHistoryCard(item)),
                         ],
                       );
                     },
@@ -546,6 +605,60 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildHistoryCard(FoodLogItem item) {
+    final hasValidImage = item.imagePath != null &&
+        item.imagePath!.isNotEmpty &&
+        File(item.imagePath!).existsSync();
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      width: double.infinity,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Gambar Makanan jika ada foto hasil scan (tanpa gambar dummy internet)
+          if (hasValidImage) ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: SizedBox(
+                height: 190,
+                width: double.infinity,
+                child: Image.file(
+                  File(item.imagePath!),
+                  width: double.infinity,
+                  height: 190,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+
+          // Judul Makanan
+          Text(
+            item.foodName,
+            style: GoogleFonts.spaceGrotesk(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 4),
+
+          // Teks Nutrisi: 480 Kcal | Protein: 32g | Carbs: 12g | Fat: 34g
+          Text(
+            '${item.calories} Kcal  |  Protein: ${item.protein}g  |  Carbs: ${item.carbs}g  |  Fat: ${item.fat}g',
+            style: GoogleFonts.spaceGrotesk(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: const Color(0xFFD4D4D8),
+            ),
+          ),
+        ],
       ),
     );
   }

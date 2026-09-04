@@ -8,6 +8,7 @@ class FoodLogItem {
   final int carbs;
   final int fat;
   final DateTime timestamp;
+  final String? imagePath;
 
   FoodLogItem({
     required this.id,
@@ -17,6 +18,7 @@ class FoodLogItem {
     required this.carbs,
     required this.fat,
     required this.timestamp,
+    this.imagePath,
   });
 }
 
@@ -25,33 +27,14 @@ class NutritionLogService extends ChangeNotifier {
   factory NutritionLogService() => _instance;
   NutritionLogService._internal();
 
-  int _consumedCalories = 920;
+  int _consumedCalories = 0;
   final int _targetCalories = 2000;
 
-  int _consumedProtein = 65;
-  int _consumedCarbs = 110;
-  int _consumedFat = 38;
+  int _consumedProtein = 0;
+  int _consumedCarbs = 0;
+  int _consumedFat = 0;
 
-  final List<FoodLogItem> _loggedItems = [
-    FoodLogItem(
-      id: '1',
-      foodName: 'Oatmeal & Berries',
-      calories: 380,
-      protein: 15,
-      carbs: 55,
-      fat: 10,
-      timestamp: DateTime.now().subtract(const Duration(hours: 4)),
-    ),
-    FoodLogItem(
-      id: '2',
-      foodName: 'Grilled Chicken Salad',
-      calories: 540,
-      protein: 50,
-      carbs: 55,
-      fat: 28,
-      timestamp: DateTime.now().subtract(const Duration(hours: 1)),
-    ),
-  ];
+  final List<FoodLogItem> _loggedItems = [];
 
   int get consumedCalories => _consumedCalories;
   int get targetCalories => _targetCalories;
@@ -67,6 +50,7 @@ class NutritionLogService extends ChangeNotifier {
     required int protein,
     required int carbs,
     required int fat,
+    String? imagePath,
   }) {
     final newItem = FoodLogItem(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -76,6 +60,7 @@ class NutritionLogService extends ChangeNotifier {
       carbs: carbs,
       fat: fat,
       timestamp: DateTime.now(),
+      imagePath: imagePath,
     );
 
     _loggedItems.insert(0, newItem);
@@ -87,3 +72,4 @@ class NutritionLogService extends ChangeNotifier {
     notifyListeners();
   }
 }
+

@@ -15,14 +15,7 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
-
-  final List<Widget> _screens = const [
-    HomeScreen(),
-    DietPlanScreen(),
-    ScannerScreen(),
-    AnalyticsScreen(),
-    ProfileScreen(),
-  ];
+  bool _hideBottomBar = false;
 
   final List<IconData> _activeIcons = const [
     Icons.home_rounded,
@@ -42,6 +35,26 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screens = [
+      const HomeScreen(),
+      const DietPlanScreen(),
+      ScannerScreen(
+        onScanStateChanged: (isScanned) {
+          setState(() {
+            _hideBottomBar = isScanned;
+          });
+        },
+        onNavigateToHome: () {
+          setState(() {
+            _currentIndex = 0;
+            _hideBottomBar = false;
+          });
+        },
+      ),
+      const AnalyticsScreen(),
+      const ProfileScreen(),
+    ];
+
     return Scaffold(
       backgroundColor: const Color(0xFF121212),
       body: BottomBar(
@@ -70,53 +83,60 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         ),
         body: IndexedStack(
           index: _currentIndex,
-          children: _screens,
+          children: screens,
         ),
-        child: SizedBox(
-          width: 314,
-          height: 66,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(5, (index) {
-              final isSelected = index == _currentIndex;
-              return GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  setState(() {
-                    _currentIndex = index;
-                  });
-                },
-                child: SizedBox(
-                  width: 58,
-                  height: 66,
-                  child: Center(
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      curve: Curves.easeOut,
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? const Color(0xFFFF5A16).withValues(alpha: 0.15)
-                            : Colors.transparent,
-                        shape: BoxShape.circle,
+        child: _hideBottomBar
+            ? const SizedBox.shrink()
+            : SizedBox(
+                width: 314,
+                height: 66,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: List.generate(5, (index) {
+                    final isSelected = index == _currentIndex;
+                    return GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        setState(() {
+                          _currentIndex = index;
+                          if (index != 2) {
+                            _hideBottomBar = false;
+                          }
+                        });
+                      },
+                      child: SizedBox(
+                        width: 58,
+                        height: 66,
+                        child: Center(
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            curve: Curves.easeOut,
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? const Color(0xFFFF5A16)
+                                      .withValues(alpha: 0.15)
+                                  : Colors.transparent,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              isSelected
+                                  ? _activeIcons[index]
+                                  : _inactiveIcons[index],
+                              color: isSelected
+                                  ? const Color(0xFFFF5A16)
+                                  : const Color(0xFF474747),
+                              size: 26,
+                            ),
+                          ),
+                        ),
                       ),
-                      child: Icon(
-                        isSelected
-                            ? _activeIcons[index]
-                            : _inactiveIcons[index],
-                        color: isSelected
-                            ? const Color(0xFFFF5A16)
-                            : const Color(0xFF474747),
-                        size: 26,
-                      ),
-                    ),
-                  ),
+                    );
+                  }),
                 ),
-              );
-            }),
-          ),
-        ),
+              ),
       ),
     );
   }
 }
+
